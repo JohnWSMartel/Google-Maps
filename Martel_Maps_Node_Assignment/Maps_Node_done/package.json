@@ -1,0 +1,11 @@
+{
+  "name": "node_gmap",
+  "version": "1.0.0",
+  "description": "A very simple server to serve google map data for RIT",
+  "main": "server.js",
+  "scripts": {
+    "start": "node ./src/server.js"
+  },
+  "author": "Cody Van De Mark",
+  "license": "ISC"
+}
