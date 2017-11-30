@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+	  button
+	  {
+		font-size: 11px;
+		position: absolute;
+		color: red;
+		font-weight:bold;
+		height:30px;
+		width:130px;
+		z-index:100;
+	  }
+	  
+	  #worldZoomButton
+	  {
+		top:70px;
+		left:10px;
+	  }
+	  #defaultZoomButton
+	  {
+		top:110px;
+		left:10;
+	  }
+	  #buildingZoomButton
+	  {
+		top:150px;
+		left10px;
+	  }
+	  #isometricZoomButton
+	  {
+		top:190px;
+		left:10px;
+	  }
+	  #updateCoffee
+	  {
+		top:230px;
+		left:10px;
+	  }
+	  #updateBuildings
+	  {
+		top:270px;
+		left:10px;
+	  }
+    </style>
+  </head>
+  <body>
+	<p><button id="worldZoomButton">World Zoom (1)</button></p>
+	<p><button id="defaultZoomButton">Default Zoom (16)</button></p>
+	<p><button id="buildingZoomButton">Building Zoom (20)</button></p>
+	<p><button id="isometricZoomButton">Isometric View (18)</button></p>
+	<p><button id="updateCoffee">Update Coffee Shops</button></p>
+	<p><button id="updateBuildings">Update Buildings</button></p>
+    <div id="map"></div>
+    <script>
+      var map;
+	  var infowindow;
+	  var markers = [];
+	  var polygons = [];
+	  var baseUrl = 'http://localhost:3000';
+	  var coffeeUrl = '/coffee.json';
+	  var buildingUrl = 'src/building.json';
+	  
+	  
+      window.initMap = function() 
+	  {
+		//map setup
+		var mapOptions = 
+		{
+			center: {lat:43.083848, lng:-77.6799},
+			zoom: 16,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		};
+        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+		
+		//buttons
+		document.querySelector("#worldZoomButton").onclick = function()
+		{
+			map.setZoom(1);
+		};
+		document.querySelector("#defaultZoomButton").onclick = function()
+		{
+			map.setZoom(16);
+		};
+		document.querySelector("#buildingZoomButton").onclick = function()
+		{
+			map.setZoom(20);
+		};
+		document.querySelector("#isometricZoomButton").onclick = function()
+		{
+			map.setZoom(18);
+		};
+		document.querySelector("#updateCoffee").onclick = function()
+		{
+			getCoffeeData();
+		};
+		
+		/*//marker at crossroads
+		var position = {lat:43.082634,lng:-77.68004};
+		var marker = new google.maps.Marker({position: position, map: map});
+		marker.setTitle("Crossroads");*/
+		
+		function addMarker(latitude,longitude,title)
+		{
+			var position = {lat:latitude,lng:longitude};
+			var marker = new google.maps.Marker({position:position,map:map});
+			marker.setTitle(title);
+			
+			markers.push(marker)
+			
+			//Add a listener for the click event
+			google.maps.event.addListener(marker,'click',function(e){makeInfoWindow(this.position,this.title);});
+		}
+		
+		/*for(i=0;i<coffeeShops.length;i++)
+		{
+			addMarker(coffeeShops[i].latitude,coffeeShops[i].longitude,coffeeShops[i].title)
+		}*/
+		
+		function makeInfoWindow(position,msg)
+		{
+			//Close old InfoWindow if it exists
+			if(infowindow) infowindow.close();
+			
+			//make new infowindow
+			infowindow = new google.maps.InfoWindow({
+				map:map,
+				position:position,
+				content:"<b>"+msg+"</b>"
+			});
+		}
+		
+		map.mapTypeId = 'satellite';
+		map.setTilt(45);
+		
+		function clearMarkers(){
+			markers.forEach(function(marker){marker.setMap(null);
+			});
+			
+			markers = [];
+		}
+		
+		function getCoffeeData(){
+			clearMarkers();
+			console.log( 'getting coffee' )
+			$.ajax({
+				dataType:"json",
+				url:baseUrl+coffeeUrl,
+				data:null,
+				success:function(data){
+				    console.log( 'DATA', data )
+					data.coffeeShops.forEach(function(obj){
+						addMarker(obj.latitude, obj.longitude, obj.title);
+					});
+				},
+				error: function(error){
+					console.dir(error);
+				}
+			});
+		}
+      }
+	  
+	  
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkxiY2ecvU5YvTL0OqNxjh3jgZCCKct8k &callback=initMap"async defer></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  </body>
+</html>
